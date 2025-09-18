@@ -12,6 +12,9 @@ import DoctorsPage from './components/doctors/DoctorsPage'
 import DoctorDetail from './components/doctors/DoctorDetail'
 import PatientForm from './components/patients/PatientForm'
 import DoctorForm from './components/doctors/DoctorForm'
+import AppointmentsPage from './components/appointments/AppointmentsPage'
+import AppointmentForm from './components/appointments/AppointmentForm'
+import AppointmentDetail from './components/appointments/AppointmentDetail'
 import SettingsPage from './components/settings/SettingsPage'
 import ProfileSettings from './components/settings/ProfileSettings'
 import NotFound from './components/common/NotFound'
@@ -71,6 +74,12 @@ function App() {
                 <Route path="/doctors/new" element={<DoctorForm />} />
                 <Route path="/doctors/:id" element={<DoctorDetail />} />
                 <Route path="/doctors/:id/edit" element={<DoctorForm />} />
+                
+                {/* Appointments Routes */}
+                <Route path="/appointments" element={<AppointmentsPage />} />
+                <Route path="/appointments/new" element={<AppointmentForm />} />
+                <Route path="/appointments/:id" element={<AppointmentDetail />} />
+                <Route path="/appointments/:id/edit" element={<AppointmentForm />} />
                 
                 {/* Settings Routes */}
                 <Route path="/settings" element={<SettingsPage />} />

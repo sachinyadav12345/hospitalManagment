@@ -36,12 +36,12 @@ const Sidebar = () => {
       icon: UserCheck,
       roles: ['admin', 'doctor', 'staff']
     },
-    // {
-    //   name: 'Appointments',
-    //   href: '/appointments',
-    //   icon: Calendar,
-    //   roles: ['admin', 'doctor', 'staff']
-    // },
+    {
+      name: 'Appointments',
+      href: '/appointments',
+      icon: Calendar,
+      roles: ['admin', 'doctor', 'staff']
+    },
     // {
     //   name: 'Reports',
     //   href: '/reports',
@@ -79,14 +79,12 @@ const Sidebar = () => {
 
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:h-full overflow-hidden
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex flex-col h-full">
-      
-
+        <div className="flex flex-col h-screen lg:h-full">
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-hidden flex flex-col justify-start">
             {filteredNavigation.map((item) => {
               const Icon = item.icon
               const active = isActive(item.href)
@@ -114,7 +112,7 @@ const Sidebar = () => {
           </nav>
 
           {/* User info */}
-          <div className="px-4 py-4 border-t border-gray-200">
+          <div className="px-4 py-4 border-t border-gray-200 flex-shrink-0">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="h-8 w-8 bg-teal-100 rounded-full flex items-center justify-center">

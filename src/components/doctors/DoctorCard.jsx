@@ -26,7 +26,7 @@ const DoctorCard = ({ doctor, onEdit, onDelete }) => {
     <Card hover className="cursor-pointer" onClick={() => navigate(`/doctors/${doctor.id}`)}>
       <div className="flex items-start space-x-4">
         <Avatar
-          src={doctor.avatar}
+          src={doctor.photo}
           alt={doctor.name}
           size="lg"
           fallback={doctor.name?.charAt(0)?.toUpperCase()}

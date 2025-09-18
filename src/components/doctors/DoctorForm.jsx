@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import Input from '../ui/Input'
+import { createDoctor } from '../../store/slices/doctorsSlice'
 import Button from '../ui/Button'
 
 const DoctorForm = ({ 
@@ -9,6 +11,32 @@ const DoctorForm = ({
   isLoading = false,
   isEdit = false 
 }) => {
+  const dispatch = useDispatch()
+  const { isLoading: isCreatingDoctor, error: doctorError } = useSelector((state) => state.doctors)
+  const [showSuccess, setShowSuccess] = useState(false)
+  
+  const handleSubmit = async (values, { setSubmitting }) => {
+    console.log('Form submitted with values:', values)
+    
+    // Dispatch createDoctor action
+    const result = await dispatch(createDoctor(values))
+    console.log('Result:', result)
+    
+    if (createDoctor.fulfilled.match(result)) {
+      console.log('Doctor created successfully:', result.payload)
+      setShowSuccess(true)
+      // Call the original onSubmit if provided (for navigation, etc.)
+      if (onSubmit) {
+        onSubmit(values)
+      }
+    } else if (createDoctor.rejected.match(result)) {
+      console.error('Failed to create doctor:', result.payload)
+      setShowSuccess(false)
+    }
+    
+    setSubmitting(false)
+  }
+  
   const validationSchema = Yup.object({
     name: Yup.string()
       .min(2, 'Name must be at least 2 characters')
@@ -36,7 +64,7 @@ const DoctorForm = ({
     specialization: '',
     clinicName: '',
     bio: '',
-    avatar: '',
+    photo: '',
     ...initialValues
   }
 
@@ -57,35 +85,85 @@ const DoctorForm = ({
     <Formik
       initialValues={defaultValues}
       validationSchema={validationSchema}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
     >
       {({ isSubmitting, values, setFieldValue }) => (
         <Form className="space-y-6">
+          {/* Success Display */}
+          {showSuccess && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-green-800">
+                    Doctor created successfully!
+                  </h3>
+                  <div className="mt-2 text-sm text-green-700">
+                    The doctor has been added to the system.
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {doctorError && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Error creating doctor
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    {doctorError}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
               
-              <Input
-                label="Full Name"
-                name="name"
-                type="text"
-                placeholder="Enter doctor's full name"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
+                <Field
+                  name="name"
+                  type="text"
+                  className="input-field"
+                  placeholder="Enter doctor's full name"
+                />
+                <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
 
-              <Input
-                label="Email Address"
-                name="email"
-                type="email"
-                placeholder="Enter email address"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <Field
+                  name="email"
+                  type="email"
+                  className="input-field"
+                  placeholder="Enter email address"
+                />
+                <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
 
-              <Input
-                label="Phone Number"
-                name="phone"
-                type="tel"
-                placeholder="Enter phone number"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <Field
+                  name="phone"
+                  type="tel"
+                  className="input-field"
+                  placeholder="Enter phone number"
+                />
+                <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -111,12 +189,18 @@ const DoctorForm = ({
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Additional Information</h3>
               
-              <Input
-                label="Clinic Name"
-                name="clinicName"
-                type="text"
-                placeholder="Enter clinic name"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Clinic Name
+                </label>
+                <Field
+                  name="clinicName"
+                  type="text"
+                  className="input-field"
+                  placeholder="Enter clinic name"
+                />
+                <ErrorMessage name="clinicName" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -134,19 +218,19 @@ const DoctorForm = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Avatar URL (Optional)
+                  Photo URL (Optional)
                 </label>
                 <Field
-                  name="avatar"
+                  name="photo"
                   type="url"
                   className="input-field"
-                  placeholder="Enter avatar URL"
+                  placeholder="Enter photo URL"
                 />
-                <ErrorMessage name="avatar" component="div" className="text-red-500 text-sm mt-1" />
-                {values.avatar && (
+                <ErrorMessage name="photo" component="div" className="text-red-500 text-sm mt-1" />
+                {values.photo && (
                   <div className="mt-2">
                     <img
-                      src={values.avatar}
+                      src={values.photo}
                       alt="Doctor preview"
                       className="h-20 w-20 rounded-lg object-cover border border-gray-200"
                       onError={(e) => {
@@ -170,7 +254,7 @@ const DoctorForm = ({
             </Button>
             <Button
               type="submit"
-              loading={isSubmitting || isLoading}
+              loading={isSubmitting || isLoading || isCreatingDoctor}
             >
               {isEdit ? 'Update Doctor' : 'Create Doctor'}
             </Button>

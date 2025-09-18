@@ -127,16 +127,6 @@ const ProfileSettings = () => {
               Change Password
             </Button>
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-              <p className="text-sm text-gray-600">Add an extra layer of security</p>
-            </div>
-            <Button variant="outline" size="sm">
-              Enable 2FA
-            </Button>
-          </div>
         </div>
       </Card>
     </div>

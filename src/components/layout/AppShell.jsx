@@ -4,11 +4,11 @@ import ToastContainer from '../ui/ToastContainer'
 
 const AppShell = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       <Header />
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 lg:ml-0">
+        <main className="flex-1 lg:ml-0 overflow-auto">
           <div className="p-6">
             {children}
           </div>

@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Formik, Form, Field, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
 import { fetchDoctors } from '../../store/slices/doctorsSlice'
-import { createPatient } from '../../store/slices/patientsSlice'
+import { fetchPatients } from '../../store/slices/patientsSlice'
 import Button from '../ui/Button'
+import { createAppointment } from '../../store/slices/appointmentsSlice'
 
-const PatientForm = ({ 
+const AppointmentForm = ({ 
   initialValues = {}, 
   onSubmit, 
   isLoading = false,
@@ -14,70 +15,66 @@ const PatientForm = ({
 }) => {
   const dispatch = useDispatch()
   const { doctors } = useSelector((state) => state.doctors)
+  const { patients } = useSelector((state) => state.patients)
   const { user } = useSelector((state) => state.auth)
-  const { isLoading: isCreatingPatient, error: patientError } = useSelector((state) => state.patients)
+  const { isLoading: isCreatingAppointment, error: appointmentError } = useSelector((state) => state.appointments)
   const [showSuccess, setShowSuccess] = useState(false)
   
   const handleSubmit = async (values, { setSubmitting }) => {
     console.log('Form submitted with values:', values)
     
-    // Dispatch createPatient action
-    const result = await dispatch(createPatient(values))
+    // Dispatch createAppointment action
+    const result = await dispatch(createAppointment(values))
     console.log('Result:', result)
     
-    if (createPatient.fulfilled.match(result)) {
-      console.log('Patient created successfully:', result.payload)
+    if (createAppointment.fulfilled.match(result)) {
+      console.log('Appointment created successfully:', result.payload)
       setShowSuccess(true)
       // Call the original onSubmit if provided (for navigation, etc.)
       if (onSubmit) {
         onSubmit(values)
       }
-    } else if (createPatient.rejected.match(result)) {
-      console.error('Failed to create patient:', result.payload)
+    } else if (createAppointment.rejected.match(result)) {
+      console.error('Failed to create appointment:', result.payload)
       setShowSuccess(false)
     }
     
     setSubmitting(false)
   }
+
   useEffect(() => {
     dispatch(fetchDoctors())
+    dispatch(fetchPatients())
   }, [dispatch])
 
   const validationSchema = Yup.object({
-    name: Yup.string()
-      .min(2, 'Name must be at least 2 characters')
-      .required('Name is required'),
-    email: Yup.string()
-      .email('Invalid email address')
-      .required('Email is required'),
-    phone: Yup.string()
-      .matches(/^\+?[\d\s-()]+$/, 'Invalid phone number')
-      .required('Phone is required'),
-    dateOfBirth: Yup.date()
-      .max(new Date(), 'Date of birth cannot be in the future')
-      .required('Date of birth is required'),
-    gender: Yup.string()
-      .oneOf(['male', 'female', 'other'], 'Please select a gender')
-      .required('Gender is required'),
-    address: Yup.string()
-      .min(10, 'Address must be at least 10 characters')
-      .required('Address is required'),
-    assignedDoctorId: Yup.string()
-      .required('Please assign a doctor'),
+    patientId: Yup.string()
+      .required('Please select a patient'),
+    doctorId: Yup.string()
+      .required('Please select a doctor'),
+    appointmentDate: Yup.date()
+      .min(new Date(), 'Appointment date cannot be in the past')
+      .required('Appointment date is required'),
+    appointmentTime: Yup.string()
+      .required('Appointment time is required'),
+    reason: Yup.string()
+      .min(10, 'Reason must be at least 10 characters')
+      .required('Reason is required'),
+    status: Yup.string()
+      .oneOf(['scheduled', 'confirmed', 'cancelled', 'completed'], 'Please select a valid status')
+      .required('Status is required'),
     notes: Yup.string()
       .max(500, 'Notes must be less than 500 characters')
   })
 
   const defaultValues = {
-    name: '',
-    email: '',
-    phone: '',
-    dateOfBirth: '',
-    gender: '',
-    address: '',
-    assignedDoctorId: '',
+    patientId: '',
+    doctorId: '',
+    appointmentDate: '',
+    appointmentTime: '',
+    reason: '',
+    status: 'scheduled',
     notes: '',
-    photo: '',
     ...initialValues
   }
 
@@ -86,10 +83,22 @@ const PatientForm = ({
     label: `${doctor.name} - ${doctor.specialization}`
   }))
 
-  const genderOptions = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' }
+  const patientOptions = patients.map(patient => ({
+    value: patient.id,
+    label: `${patient.name} - ${patient.email}`
+  }))
+
+  const statusOptions = [
+    { value: 'scheduled', label: 'Scheduled' },
+    { value: 'confirmed', label: 'Confirmed' },
+    { value: 'cancelled', label: 'Cancelled' },
+    { value: 'completed', label: 'Completed' }
+  ]
+
+  const timeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
   ]
 
   return (
@@ -106,10 +115,10 @@ const PatientForm = ({
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-green-800">
-                    Patient created successfully!
+                    Appointment created successfully!
                   </h3>
                   <div className="mt-2 text-sm text-green-700">
-                    The patient has been added to the system.
+                    The appointment has been scheduled.
                   </div>
                 </div>
               </div>
@@ -117,15 +126,15 @@ const PatientForm = ({
           )}
 
           {/* Error Display */}
-          {patientError && (
+          {appointmentError && (
             <div className="bg-red-50 border border-red-200 rounded-md p-4">
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800">
-                    Error creating patient
+                    Error creating appointment
                   </h3>
                   <div className="mt-2 text-sm text-red-700">
-                    {patientError}
+                    {appointmentError}
                   </div>
                 </div>
               </div>
@@ -135,104 +144,34 @@ const PatientForm = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
+              <h3 className="text-lg font-medium text-gray-900">Appointment Details</h3>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
-                <Field
-                  name="name"
-                  type="text"
-                  className="input-field"
-                  placeholder="Enter patient's full name"
-                />
-                <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <Field
-                  name="email"
-                  type="email"
-                  className="input-field"
-                  placeholder="Enter email address"
-                />
-                <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <Field
-                  name="phone"
-                  type="tel"
-                  className="input-field"
-                  placeholder="Enter phone number"
-                />
-                <ErrorMessage name="phone" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth
-                </label>
-                <Field
-                  name="dateOfBirth"
-                  type="date"
-                  className="input-field"
-                />
-                <ErrorMessage name="dateOfBirth" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Gender
+                  Patient
                 </label>
                 <Field
                   as="select"
-                  name="gender"
+                  name="patientId"
                   className="input-field"
                 >
-                  <option value="">Select gender</option>
-                  {genderOptions.map((option) => (
+                  <option value="">Select a patient</option>
+                  {patientOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </Field>
-                <ErrorMessage name="gender" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">Additional Information</h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Address
-                </label>
-                <Field
-                  as="textarea"
-                  name="address"
-                  rows={3}
-                  className="input-field"
-                  placeholder="Enter full address"
-                />
-                <ErrorMessage name="address" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="patientId" component="div" className="text-red-500 text-sm mt-1" />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assigned Doctor
+                  Doctor
                 </label>
                 <Field
                   as="select"
-                  name="assignedDoctorId"
+                  name="doctorId"
                   className="input-field"
                 >
                   <option value="">Select a doctor</option>
@@ -242,7 +181,75 @@ const PatientForm = ({
                     </option>
                   ))}
                 </Field>
-                <ErrorMessage name="assignedDoctorId" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="doctorId" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Appointment Date
+                </label>
+                <Field
+                  name="appointmentDate"
+                  type="date"
+                  className="input-field"
+                />
+                <ErrorMessage name="appointmentDate" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Appointment Time
+                </label>
+                <Field
+                  as="select"
+                  name="appointmentTime"
+                  className="input-field"
+                >
+                  <option value="">Select time</option>
+                  {timeSlots.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </Field>
+                <ErrorMessage name="appointmentTime" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-gray-900">Additional Information</h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <Field
+                  as="select"
+                  name="status"
+                  className="input-field"
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Field>
+                <ErrorMessage name="status" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reason for Visit
+                </label>
+                <Field
+                  as="textarea"
+                  name="reason"
+                  rows={3}
+                  className="input-field"
+                  placeholder="Enter reason for the appointment"
+                />
+                <ErrorMessage name="reason" component="div" className="text-red-500 text-sm mt-1" />
               </div>
 
               <div>
@@ -258,31 +265,6 @@ const PatientForm = ({
                 />
                 <ErrorMessage name="notes" component="div" className="text-red-500 text-sm mt-1" />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Photo URL (Optional)
-                </label>
-                <Field
-                  name="photo"
-                  type="url"
-                  className="input-field"
-                  placeholder="Enter photo URL"
-                />
-                <ErrorMessage name="photo" component="div" className="text-red-500 text-sm mt-1" />
-                {values.photo && (
-                  <div className="mt-2">
-                    <img
-                      src={values.photo}
-                      alt="Patient preview"
-                      className="h-20 w-20 rounded-lg object-cover border border-gray-200"
-                      onError={(e) => {
-                        e.target.style.display = 'none'
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
             </div>
           </div>
 
@@ -297,9 +279,9 @@ const PatientForm = ({
             </Button>
             <Button
               type="submit"
-              loading={isSubmitting || isLoading || isCreatingPatient}
+              loading={isSubmitting || isLoading || isCreatingAppointment}
             >
-              {isEdit ? 'Update Patient' : 'Create Patient'}
+              {isEdit ? 'Update Appointment' : 'Create Appointment'}
             </Button>
           </div>
         </Form>
@@ -308,4 +290,4 @@ const PatientForm = ({
   )
 }
 
-export default PatientForm
+export default AppointmentForm

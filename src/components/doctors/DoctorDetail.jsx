@@ -28,7 +28,7 @@ const DoctorDetail = ({ doctor, onEdit, onDelete }) => {
       {/* Header */}
       <div className="flex items-start space-x-4">
         <Avatar
-          src={doctor.avatar}
+          src={doctor.photo}
           alt={doctor.name}
           size="2xl"
           fallback={doctor.name?.charAt(0)?.toUpperCase()}

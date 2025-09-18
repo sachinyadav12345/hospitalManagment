@@ -92,7 +92,7 @@ const Header = () => {
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                 <div className="py-1">
-                  <button
+                  {/* <button
                     onClick={() => {
                       navigate('/settings/profile')
                       setShowUserMenu(false)
@@ -101,8 +101,8 @@ const Header = () => {
                   >
                     <User className="h-4 w-4 mr-3" />
                     Profile Settings
-                  </button>
-                  <button
+                  </button> */}
+                  {/* <button
                     onClick={() => {
                       navigate('/settings')
                       setShowUserMenu(false)
@@ -111,7 +111,7 @@ const Header = () => {
                   >
                     <Settings className="h-4 w-4 mr-3" />
                     Settings
-                  </button>
+                  </button> */}
                   <hr className="my-1" />
                   <button
                     onClick={handleLogout}

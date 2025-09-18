@@ -1,13 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { mockApi } from '../../api/mockApi'
+import { 
+  getAllDoctorsApi, 
+  createDoctorApi, 
+  getSingleDoctorApi, 
+  updateDoctorApi, 
+  deleteDoctorApi 
+} from '../../api/doctorsApi'
 
 // Async thunks
 export const fetchDoctors = createAsyncThunk(
   'doctors/fetchDoctors',
-  async (params, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const { auth } = getState()
-      const response = await mockApi.doctors.getDoctors(params)
+      const response = await getAllDoctorsApi()
       return response
     } catch (error) {
       return rejectWithValue(error.message)
@@ -17,10 +22,9 @@ export const fetchDoctors = createAsyncThunk(
 
 export const fetchDoctor = createAsyncThunk(
   'doctors/fetchDoctor',
-  async (id, { getState, rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
-      const { auth } = getState()
-      const response = await mockApi.doctors.getDoctor(id)
+      const response = await getSingleDoctorApi(id)
       return response
     } catch (error) {
       return rejectWithValue(error.message)
@@ -30,10 +34,9 @@ export const fetchDoctor = createAsyncThunk(
 
 export const createDoctor = createAsyncThunk(
   'doctors/createDoctor',
-  async (doctorData, { getState, rejectWithValue }) => {
+  async (doctorData, { rejectWithValue }) => {
     try {
-      const { auth } = getState()
-      const response = await mockApi.doctors.createDoctor(doctorData, auth.user)
+      const response = await createDoctorApi(doctorData)
       return response
     } catch (error) {
       return rejectWithValue(error.message)
@@ -43,10 +46,9 @@ export const createDoctor = createAsyncThunk(
 
 export const updateDoctor = createAsyncThunk(
   'doctors/updateDoctor',
-  async ({ id, doctorData }, { getState, rejectWithValue }) => {
+  async ({ id, doctorData }, { rejectWithValue }) => {
     try {
-      const { auth } = getState()
-      const response = await mockApi.doctors.updateDoctor(id, doctorData, auth.user)
+      const response = await updateDoctorApi(id, doctorData)
       return response
     } catch (error) {
       return rejectWithValue(error.message)
@@ -56,10 +58,9 @@ export const updateDoctor = createAsyncThunk(
 
 export const deleteDoctor = createAsyncThunk(
   'doctors/deleteDoctor',
-  async (id, { getState, rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
-      const { auth } = getState()
-      await mockApi.doctors.deleteDoctor(id, auth.user)
+      await deleteDoctorApi(id)
       return id
     } catch (error) {
       return rejectWithValue(error.message)

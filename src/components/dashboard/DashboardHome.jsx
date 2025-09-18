@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchPatients } from '../../store/slices/patientsSlice'
 import { fetchDoctors } from '../../store/slices/doctorsSlice'
+import { fetchAppointments } from '../../store/slices/appointmentsSlice'
 import KPICard from './KPICard'
 import QuickActions from './QuickActions'
 import RecentPatients from './RecentPatients'
@@ -12,10 +13,12 @@ const DashboardHome = () => {
   const { user } = useSelector((state) => state.auth)
   const { patients, total: totalPatients } = useSelector((state) => state.patients)
   const { doctors, total: totalDoctors } = useSelector((state) => state.doctors)
+  const { appointments, total: totalAppointments } = useSelector((state) => state.appointments)
 
   useEffect(() => {
-    dispatch(fetchPatients({ limit: 5 }))
-    dispatch(fetchDoctors({ limit: 10 }))
+    dispatch(fetchPatients())
+    dispatch(fetchDoctors())
+    dispatch(fetchAppointments())
   }, [dispatch])
 
   const kpis = [
@@ -34,9 +37,9 @@ const DashboardHome = () => {
       icon: UserCheck
     },
     {
-      title: 'Appointments Today',
-      value: '8',
-      change: '+3',
+      title: 'Total Appointments',
+      value: totalAppointments,
+      change: '+5',
       changeType: 'positive',
       icon: Calendar
     },
